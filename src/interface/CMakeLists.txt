@@ -12,6 +12,8 @@ set(HEADERS qucs_interface.h)
 
 add_library(coreInterface OBJECT ${INTERFACE_SRC})
 
+if (WITH_ADMS)
 add_dependencies(coreInterface coreVerilog)
+endif()
 
 install(FILES ${HEADERS} DESTINATION include/qucs-core)

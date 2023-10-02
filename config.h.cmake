@@ -287,3 +287,5 @@
 /* Git last commit short hash */
 #cmakedefine GIT "@GIT@"
 
+#cmakedefine WITH_ADMS
+

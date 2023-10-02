@@ -195,6 +195,7 @@ endif()
 # * Use -DADMSXML_DIR=[path] to give the path containing admsXml
 # * Try a few other locations
 #
+if(WITH_ADMS)
 find_program(
   ADMSXML admsXml
   HINTS ${ADMSXML_DIR}
@@ -205,6 +206,7 @@ if(NOT ADMSXML)
 else()
   message(STATUS "Found admsXml: " ${ADMSXML})
 endif()
+ENDIF()
 
 #
 # Set up RPATH for the project

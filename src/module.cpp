@@ -264,6 +264,7 @@ void module::registerModules (void) {
   REGISTER_CIRCUIT (digisource);
   REGISTER_CIRCUIT (buffer);
 
+#ifdef WITH_ADMS
   REGISTER_CIRCUIT (EKV26MOS);
   REGISTER_CIRCUIT (log_amp);
   REGISTER_CIRCUIT (mod_amp);
@@ -303,6 +304,7 @@ void module::registerModules (void) {
   REGISTER_CIRCUIT (comp_4bit);
   REGISTER_CIRCUIT (hpribin4bit);
   REGISTER_CIRCUIT (vcresistor);
+#endif
   REGISTER_CIRCUIT (ecvs);
 
   // analyses

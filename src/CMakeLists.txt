@@ -475,7 +475,9 @@ add_subdirectory(components)
 add_subdirectory(components/digital)
 add_subdirectory(components/devices)
 add_subdirectory(components/microstrip)
+if (WITH_ADMS)
 add_subdirectory(components/verilog)
+endif()
 add_subdirectory(math)
 
 # Qucsconv application
@@ -494,6 +496,7 @@ add_executable(qucsator ucs.cpp ${PUBLIC_HEADERS} ${TEMPLATES})
 # After: - http://stackoverflow.com/questions/11429055/cmake-how-create-a-
 # single-shared-library-from-all-static-libraries-of-subprojec
 #
+if (WITH_ADMS)
 add_library(
   libqucsator SHARED
   ${LIBQUCS_SRC}
@@ -505,6 +508,19 @@ add_library(
   $<TARGET_OBJECTS:coreMicrostrip>
   $<TARGET_OBJECTS:coreDevices>
   $<TARGET_OBJECTS:coreDigital>)
+else()
+add_library(
+  libqucsator SHARED
+  ${LIBQUCS_SRC}
+  ${TEMPLATES}
+  $<TARGET_OBJECTS:coreMath>
+  $<TARGET_OBJECTS:coreComponents>
+  $<TARGET_OBJECTS:coreInterface>
+# $<TARGET_OBJECTS:coreVerilog>
+  $<TARGET_OBJECTS:coreMicrostrip>
+  $<TARGET_OBJECTS:coreDevices>
+  $<TARGET_OBJECTS:coreDigital>)
+endif()
 
 # rename the library to let it be libqucsator (not liblibqucsator)
 set_target_properties(libqucsator PROPERTIES OUTPUT_NAME qucsator)
