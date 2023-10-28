@@ -498,7 +498,7 @@ add_executable(qucsator ucs.cpp ${PUBLIC_HEADERS} ${TEMPLATES})
 #
 if (WITH_ADMS)
 add_library(
-  libqucsator SHARED
+    libqucsator STATIC
   ${LIBQUCS_SRC}
   ${TEMPLATES}
   $<TARGET_OBJECTS:coreMath>
@@ -510,7 +510,7 @@ add_library(
   $<TARGET_OBJECTS:coreDigital>)
 else()
 add_library(
-  libqucsator SHARED
+    libqucsator STATIC
   ${LIBQUCS_SRC}
   ${TEMPLATES}
   $<TARGET_OBJECTS:coreMath>
