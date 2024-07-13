@@ -167,6 +167,45 @@ void coaxline::calcNoiseAC (nr_double_t) {
   setMatrixN (4 * celsius2kelvin (T) / T0 * real (getMatrixY ()));
 }
 
+void coaxline::initTR (void) {
+  nr_double_t l = getPropertyDouble ("L");
+  nr_double_t er  = getPropertyDouble ("er");
+  nr_double_t mur = getPropertyDouble ("mur");
+
+  calcPropagation(0.0);
+
+  deleteHistory ();
+  if (l > 0.0) {
+    setVoltageSources (2);
+    allocMatrixMNA ();
+    setHistory (true);
+    initHistory (l * qucs::sqrt(er * mur) / C0);
+    setB (NODE_1, VSRC_1, +1); setB (NODE_2, VSRC_2, +1);
+    setC (VSRC_1, NODE_1, +1); setC (VSRC_2, NODE_2, +1);
+    setD (VSRC_1, VSRC_1, -zl); setD (VSRC_2, VSRC_2, -zl);
+  } else {
+    setVoltageSources (1);
+    allocMatrixMNA ();
+    voltageSource (VSRC_1, NODE_1, NODE_2);
+  }
+}
+
+void coaxline::calcTR (nr_double_t t) {
+  nr_double_t l = getPropertyDouble ("L");
+  nr_double_t er  = getPropertyDouble ("er");
+  nr_double_t mur = getPropertyDouble ("mur");
+  nr_double_t T = l  * qucs::sqrt(er * mur) / C0;
+  nr_double_t a = alpha;
+  if (T > 0.0) {
+    T = t - T;
+    a = std::exp (-a / 2 * l);
+    setE (VSRC_1, a * (getV (NODE_2, T) + zl * getJ (VSRC_2, T)));
+    setE (VSRC_2, a * (getV (NODE_1, T) + zl * getJ (VSRC_1, T)));
+  }
+}
+
+
+
 // properties
 PROP_REQ [] = {
   { "D", PROP_REAL, { 2.95e-3, PROP_NO_STR }, PROP_POS_RANGEX },
