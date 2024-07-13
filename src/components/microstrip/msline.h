@@ -37,6 +37,8 @@ class msline : public qucs::circuit
   void calcAC (nr_double_t);
   void calcNoiseAC (nr_double_t);
   void saveCharacteristics (nr_double_t);
+  void initTR();
+  void calcTR(nr_double_t);
 
   static void analyseQuasiStatic (nr_double_t, nr_double_t, nr_double_t,
 				  nr_double_t, const char * const,
