@@ -1,3 +1,7 @@
+# QucsatorRF v1.0.4
+
+* Fix datasets conversion #33
+
 # QucsatorRF v1.0.3
 
 * Fixed reading the netlist from STDIN #24
