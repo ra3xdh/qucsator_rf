@@ -1,3 +1,7 @@
+# QucsatorRF v1.0.5
+
+* Fixed bugs related to data files converter #34
+
 # QucsatorRF v1.0.4
 
 * Fix datasets conversion #33
