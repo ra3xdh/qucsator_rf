@@ -59,7 +59,7 @@ DIGIT    [0-9]
 EXPONENT [Ee][+-]?{DIGIT}+
 INT      [+-]?{DIGIT}+
 REAL     [+-]?{DIGIT}+("."{DIGIT}+)?{EXPONENT}?
-BINARY   [01uUzZ]+
+BINARY   [01xXuUzZ]+
 DECIMAL  {DIGIT}+
 SCALAR   [01uUzZ]
 CODE     [!-~]+
