@@ -1,3 +1,7 @@
+# QucsatorRF v1.0.6
+
+* Fixed bugs related to VCD files conversion #36
+
 # QucsatorRF v1.0.5
 
 * Fixed bugs related to data files converter #34
