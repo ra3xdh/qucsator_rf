@@ -95,7 +95,8 @@ MODEL1   ([rR]|[cC]|[sS][wW]|[cC][sS][wW]|[uU][rR][cC]|[lL][tT][rR][aA])
 MODEL2   ([dD]|[nN][pP][nN]|[pP][nN][pP]|[nN][jJ][fF]|[pP][jJ][fF])
 MODEL3   ([nN][mM][oO][sS]|[pP][mM][oO][sS]|[nN][mM][fF]|[pP][mM][fF])
 MODEL4   ([rR][eE][sS]|[vV][sS][wW][iI][tT][cC][hH])
-MODEL    ({MODEL1}|{MODEL2}|{MODEL3}|{MODEL4})
+MODEL5   ([cC][oO][rR][eE])
+MODEL    ({MODEL1}|{MODEL2}|{MODEL3}|{MODEL4}|{MODEL5})
 
      /* Voltage derivatives */
 VFUN     ([vV]|[vV][rR]|[vV][iI]|[vV][mM]|[vV][pP]|[vV][dD][bB])

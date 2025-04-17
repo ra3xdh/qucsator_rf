@@ -315,6 +315,14 @@ qucs_devices[] = {
     "1 0 0 8 -26 0 0",
     NULL
   },
+  /* CORE */
+  { "CORE", "CORE", "CORE", 4,
+    { "A","K","C","MS","alpha", NULL },
+    NULL,
+    "1 350 140 -40 35 0 0",
+    NULL
+  },
+
   { NULL, NULL, NULL, 0, { NULL }, NULL, NULL, NULL }
 };
 
@@ -336,8 +344,9 @@ static struct pair_t *
 qucslib_find_prop (struct definition_t * def, const char * key) {
   struct pair_t * pair;
   for (pair = def->pairs; pair; pair = pair->next) {
-    if (!strcmp (pair->key, key))
+    if (!strcmp (pair->key, key)) {
       return pair;
+    }
   }
   return NULL;
 }

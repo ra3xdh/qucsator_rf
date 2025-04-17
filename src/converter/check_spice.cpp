@@ -43,6 +43,8 @@
 #include "qucs_producer.h"
 #include "hash.h"
 
+#include "spicedefs.h"
+
 /* Global definitions for parser and checker. */
 struct definition_t * definition_root = NULL;
 struct definition_t * subcircuit_root = NULL;
@@ -58,6 +60,18 @@ static struct property_t req_spice_R[] = {
 static struct property_t opt_spice_R[] = {
   { "Temp", PROP_REAL, { 26.85, PROP_NO_STR }, PROP_MIN_VAL (K) },
   PROP_NO_PROP };
+
+static struct property_t req_spice_CORE[] = {
+  { "A", PROP_REAL, { 26, PROP_NO_STR }, PROP_NO_RANGE },
+  { "K", PROP_REAL, { 16, PROP_NO_STR }, PROP_NO_RANGE },
+  { "C", PROP_REAL, { 0.05, PROP_NO_STR }, PROP_NO_RANGE },
+  { "MS", PROP_REAL, { 300e3, PROP_NO_STR }, PROP_NO_RANGE },
+  { "alpha", PROP_REAL, { 1e-4, PROP_NO_STR }, PROP_NO_RANGE },
+  PROP_NO_PROP };
+
+static struct property_t opt_spice_CORE[] = {
+  PROP_NO_PROP };
+
 
 static struct property_t req_spice_L[] = {
   { "L", PROP_REAL, { 1e-9, PROP_NO_STR }, PROP_NO_RANGE }, PROP_NO_PROP };
@@ -98,6 +112,8 @@ struct define_t spice_definition_available[] =
   /* resistor */
   { "R", 2, PROP_COMPONENT, PROP_NO_SUBSTRATE, PROP_LINEAR,
     req_spice_R, opt_spice_R },
+  { "CORE", 2, PROP_COMPONENT, PROP_NO_SUBSTRATE, PROP_LINEAR,
+    req_spice_CORE, opt_spice_CORE },
   /* inductor */
   { "L", 2, PROP_COMPONENT, PROP_NO_SUBSTRATE, PROP_LINEAR,
     req_spice_L, spice_noprops },
@@ -463,6 +479,7 @@ spice_devices[] = {
   { "RES",     "R",      NULL   },
   { "R",       "R",      NULL   },
   { "C",       "C",      NULL   },
+  { "CORE",    "CORE",   NULL   },
   { NULL, NULL, NULL }
 };
 
@@ -687,6 +704,8 @@ spice_get_qucs_definition (struct definition_t * def) {
   struct define_t * entry;
   for (entry = qucs_definition_available; entry->type != NULL; entry++)
     if (!strcmp (entry->type, def->type)) return entry;
+  for (entry = extra_definition_available; entry->type != NULL; entry++)
+    if (!strcmp (entry->type, def->type)) return entry;
   return NULL;
 }
 
@@ -709,6 +728,7 @@ spice_device_table[] = {
   { "K", "Tr"     },
   { "S", "Relais" },
   { "T", "TLIN4P" },
+  { "CORE", "CORE" },
   { NULL, NULL }
 };
 
@@ -999,6 +1019,7 @@ property_translations[] = {
   { "L",  "IC",  "I"   },
   { NULL, "Z0",  "Z"   },
   { "R",  "TC",  "Tc1" },
+  { NULL,  "Ms",  "MS" },
   /* END of list */
   { NULL, NULL,  NULL  }
 };
@@ -1023,6 +1044,7 @@ void spice_adjust_alias_properties (struct definition_t * def,
    to the Qucs definitions. */
 void spice_adjust_properties (struct definition_t * def) {
   struct define_t * entry = spice_get_qucs_definition (def);
+
   if (entry) {
     struct pair_t * pair;
     for (pair = def->pairs; pair != NULL; pair = pair->next) {
