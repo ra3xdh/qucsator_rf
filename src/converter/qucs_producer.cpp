@@ -324,7 +324,7 @@ qucs_devices[] = {
   },
   /* VDMOS */
   { "VDMOS", "VDMOS", "M", 4,
-    { "Type","Mul","VtO","Kp", "Pih", "lambda", "Theta", "Rd", "Rs", "Rg",
+    { "Type","Mul","VtO","Kp", "Phi", "lambda", "Theta", "Rd", "Rs", "Rg",
       "Kf", "Af", "RQ", "VQ", "Mtriode", "Subshift", "Ksubthres", "BV", "Ibv", "Nbv",
       "Rds", "Rb", "N", "Tt", "Eg", "Xti", "Is", "Vj", "Fc", "CjO", "M", "Cgdmin",
       "Cgdmax", "A", "Cgs", NULL },
