@@ -480,6 +480,8 @@ spice_devices[] = {
   { "R",       "R",      NULL   },
   { "C",       "C",      NULL   },
   { "CORE",    "CORE",   NULL   },
+  { "VDMOS",   "VDMOS",   "nchan" },
+  { "VDMOS",   "VDMOS",   "pchan" },
   { NULL, NULL, NULL }
 };
 
@@ -729,6 +731,7 @@ spice_device_table[] = {
   { "S", "Relais" },
   { "T", "TLIN4P" },
   { "CORE", "CORE" },
+  { "VDMOS", "VDMOS" },
   { NULL, NULL }
 };
 

@@ -322,6 +322,17 @@ qucs_devices[] = {
     "1 350 140 -40 35 0 0",
     NULL
   },
+  /* VDMOS */
+  { "VDMOS", "VDMOS", "M", 4,
+    { "Type","Mul","VtO","Kp", "Pih", "lambda", "Theta", "Rd", "Rs", "Rg",
+      "Kf", "Af", "RQ", "VQ", "Mtriode", "Subshift", "Ksubthres", "BV", "Ibv", "Nbv",
+      "Rds", "Rb", "N", "Tt", "Eg", "Xti", "Is", "Vj", "Fc", "CjO", "M", "Cgdmin",
+      "Cgdmax", "A", "Cgs", NULL },
+    NULL,
+    "1 0 0 15 -26 0 0",
+    NULL
+  }
+,
 
   { NULL, NULL, NULL, 0, { NULL }, NULL, NULL, NULL }
 };
