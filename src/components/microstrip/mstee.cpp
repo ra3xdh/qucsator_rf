@@ -173,11 +173,9 @@ void mstee::calcPropagation (nr_double_t f) {
   Tb2 = std::max (Tb2, NR_TINY);
 
   // shunt susceptance
-  Bt = 5.5 * std::sqrt (Da * Db / lda / ldb) * (er + 2) / er /
-    Zl2 / std::sqrt (Ta2 * Tb2) * std::sqrt (da * db) / D2 *
-    (1 + 0.9 * std::log (r) + 4.5 * r * q - 4.4 * std::exp (-1.3 * r) -
-     20 * sqr (Zl2 / Z0));
-}
+  Bt = 5.5 * (er + 2) / er * 0.5 * (da * Da / (Ta2 * lda) + db * Db / (Tb2 * ldb)) / (D2 * Zl2) *
+       (1 + 0.9 * std::log (r) + 4.5 * r * q - 4.4 * std::exp (-1.3 * r) - 20 * sqr (Zl2 / Z0));
+ }
 
 /* This function can be used to create an extra microstrip circuit.
    If the 'line' argument is NULL then the new circuit is created, the
