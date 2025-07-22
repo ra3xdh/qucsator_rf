@@ -1,3 +1,9 @@
+# QucsatorRF v1.0.7
+
+* Fixed microstrip tee model #39
+* Added support for VDMOS conversion from SPICE
+* Added support for magnetic CORE conversion from SPICE
+
 # QucsatorRF v1.0.6
 
 * Fixed bugs related to VCD files conversion #36
