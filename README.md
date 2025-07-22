@@ -11,6 +11,14 @@ also contians a QucsconvRF tool for data file formats conversion.
 
 The Qucs-S project https://github.com/ra3xdh/qucs_s is a recommended GUI for both tools.
 
+# Installation using a package manager
+
+## Guix
+
+~~~
+guix install qucsator-rf
+~~~
+
 # Build instruction
 
 ## Dependencies
