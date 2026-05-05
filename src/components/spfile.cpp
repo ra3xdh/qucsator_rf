@@ -35,6 +35,8 @@
 #include "poly.h"
 #include "spline.h"
 #include "interpolator.h"
+#include "constants.h"
+#include "logging.h"
 #include "spfile.h"
 
 using namespace qucs;
@@ -257,4 +259,140 @@ void spfile::createIndex (void) {
       }
     }
   }
+}
+
+/* This function expands the actual noise correlation matrix to have an
+   additional reference one-port whose S-parameter is -1
+   (i.e. ground).  The given S-parameter matrix is required to perform
+   this transformation. */
+matrix spfile::expandNoiseMatrix(matrix n, matrix s, nr_double_t T)
+{
+  assert(s.getCols() == s.getRows() && n.getCols() == n.getRows() &&
+         n.getCols() == s.getCols() - 1);
+  int r, c, ports = n.getCols() + 1;
+  nr_double_t g = -1;
+
+  // create K matrix
+  matrix k(ports, ports - 1);
+  for (r = 0; r < ports - 1; r++)
+  {
+    for (c = 0; c < ports - 1; c++)
+    {
+      if (r == c)
+        k.set(r, c, 1.0 + g * (s.get(r, ports - 1) - 1.0));
+      else
+        k.set(r, c, g * s.get(r, ports - 1));
+    }
+  }
+  for (c = 0; c < ports - 1; c++)
+    k.set(ports - 1, c, g * s.get(ports - 1, ports - 1) - 1.0);
+
+  // create D vector
+  matrix d(ports, 1);
+  for (r = 0; r < ports - 1; r++)
+    d.set(r, 0, s.get(r, ports - 1));
+  d.set(ports - 1, 0, s.get(ports - 1, ports - 1) - 1.0);
+
+  // expand noise correlation matrix
+  matrix res(ports);
+  res = (k * n * adjoint(k) - celsius2kelvin(T) / T0 * fabs(1 - norm(g)) * d * adjoint(d)) * norm(1 / (1 - g));
+  return res;
+}
+
+/* This function computes the noise correlation matrix of a twoport
+   based upon the noise parameters and the given S-parameter
+   matrix. */
+matrix spfile::correlationMatrix(nr_double_t Fmin, nr_complex_t Sopt,
+                                 nr_double_t Rn, matrix s)
+{
+  assert(s.getCols() == s.getRows() && s.getCols() == 2);
+  matrix c(2);
+  nr_complex_t Kx = 4 * Rn / 50.0 / norm(1.0 + Sopt);
+  c.set(0, 0, (Fmin - 1) * (norm(s.get(0, 0)) - 1) + Kx * norm(1.0 - s.get(0, 0) * Sopt));
+  c.set(1, 1, norm(s.get(1, 0)) * ((Fmin - 1) + Kx * norm(Sopt)));
+  c.set(0, 1, s.get(0, 0) / s.get(1, 0) * c.get(1, 1) - conj(s.get(1, 0)) * conj(Sopt) * Kx);
+  c.set(1, 0, conj(c.get(0, 1)));
+  return c;
+}
+
+/* This function computes the noise correlation matrix for the given
+   S-parameter matrix.  If measured noise parameters (Rn, Fmin, Sopt)
+   are available in the touchstone file, they are used to construct the
+   correlation matrix.  Otherwise, if the network is passive, the thermal
+   noise formula C_s = (I - S·S†) * T/T0 is applied.  If the network is
+   neither measured nor passive, an error is logged and a zero matrix is
+   returned. */
+matrix spfile::computeNoiseCs(nr_double_t frequency, matrix s, nr_double_t T)
+{
+  int n = s.getCols();
+
+  // TODO: perhaps we should also check if the matrix is 2x2?
+  if (nfreq != NULL && RN != NULL && FMIN != NULL && SOPT != NULL)
+  {
+    nr_double_t r = real(RN->interpolate(frequency));
+    nr_double_t f = real(FMIN->interpolate(frequency));
+    nr_complex_t g = SOPT->interpolate(frequency);
+    return correlationMatrix(f, g, r, s);
+  }
+
+  if (!isPassive(s))
+  {
+    logprint(LOG_ERROR, "ERROR: S-parameter file is not passive "
+                        "at %g Hz — cannot compute noise\n",
+             (double)frequency);
+    return eye(n) * 0;
+  }
+
+  nr_double_t tr = celsius2kelvin(T) / T0;
+  return (eye(n) - s * adjoint(s)) * tr;
+}
+
+/* This function checks whether the given S-parameter matrix represents
+   a passive network by computing the largest eigenvalue of S·S†.
+   A network is passive if all eigenvalues of S·S† are ≤ 1.
+   For 2×2 matrices an analytical formula is used; for larger
+   matrices the power iteration method is employed. */
+bool spfile::isPassive (matrix s) {
+  assert (s.getCols () == s.getRows ());
+  int n = s.getCols ();
+  matrix ssh = s * adjoint (s);
+
+  if (n == 2) {
+    // Analytical eigenvalues for 2×2 Hermitian matrix:
+    // λ = (a+d)/2 ± sqrt(((a-d)/2)² + |b|²)
+    nr_double_t a = real (ssh.get (0, 0));
+    nr_double_t d = real (ssh.get (1, 1));
+    nr_complex_t b = ssh.get (0, 1);
+    nr_double_t tr = (a + d) / 2.0;
+    nr_double_t det = ((a - d) / 2.0) * ((a - d) / 2.0) + norm (b);
+    nr_double_t lambda_max = tr + std::sqrt (det);
+    return lambda_max <= 1.0 + 1e-6;
+  }
+
+  // Power iteration for largest eigenvalue of Hermitian matrix ssh
+  // Start with a non-zero initial vector
+  matrix v (n, 1);
+  for (int i = 0; i < n; i++)
+    v.set (i, 0, nr_complex_t (1.0 / std::sqrt ((nr_double_t) n), 0.0));
+
+  nr_double_t lambda = 0.0;
+  for (int iter = 0; iter < 100; iter++) {
+    matrix w = ssh * v;
+    // Rayleigh quotient: λ = v†·w (v is unit-norm)
+    nr_complex_t lambda_c = 0.0;
+    for (int i = 0; i < n; i++)
+      lambda_c += conj (v.get (i, 0)) * w.get (i, 0);
+    lambda = real (lambda_c);
+
+    // Normalize w for next iteration
+    nr_double_t wn = 0.0;
+    for (int i = 0; i < n; i++)
+      wn += norm (w.get (i, 0));
+    wn = std::sqrt (wn);
+    if (wn < 1e-15) break;  // converged to zero
+    for (int i = 0; i < n; i++)
+      v.set (i, 0, w.get (i, 0) / wn);
+  }
+
+  return lambda <= 1.0 + 1e-6;
 }

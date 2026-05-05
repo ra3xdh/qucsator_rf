@@ -20,10 +20,6 @@
  *
  */
 
-// Include all files from gtest
-// Compiled with the same flags as qucs-core
-#include "src/gtest-all.cc"
-
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) {

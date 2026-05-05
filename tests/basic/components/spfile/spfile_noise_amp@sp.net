@@ -1,0 +1,6 @@
+# Qucs test: S-parameter file with noise parameters
+.SP:SP1 Type="lin" Start="1 GHz" Stop="2 GHz" Points="2" Noise="yes" NoiseIP="1" NoiseOP="2" saveCVs="no" saveAll="no"
+Pac:P1 n1 gnd Num="1" Z="50 Ohm" P="0 dBm" f="1 GHz" Temp="26.85"
+Pac:P2 n2 gnd Num="2" Z="50 Ohm" P="0 dBm" f="1 GHz" Temp="26.85"
+SPfile:X1 n1 n2 gnd File="{./amp_noise.s2p}" Data="rectangular" Interpolator="linear" duringDC="open" Temp="26.85"
+Eqn:Eqn1 assert="assert(abs(F - 2.0) < 0.01)" Export="yes"

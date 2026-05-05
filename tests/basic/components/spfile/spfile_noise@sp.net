@@ -1,0 +1,7 @@
+# Qucs test: S-parameter file with automatic noise calculation
+.SP:SP1 Type="lin" Start="1 GHz" Stop="10 GHz" Points="4" Noise="yes" NoiseIP="1" NoiseOP="2" saveCVs="no" saveAll="no"
+Pac:P1 n1 gnd Num="1" Z="50 Ohm" P="0 dBm" f="1 GHz" Temp="26.85"
+Pac:P2 n2 gnd Num="2" Z="50 Ohm" P="0 dBm" f="1 GHz" Temp="26.85"
+SPfile:X1 n1 n2 gnd File="{./att3dB.s2p}" Data="rectangular" Interpolator="linear" duringDC="open" Temp="50"
+Eqn:Eqn1 testS21="assert(abs(S[2,1] - 0.707) < 0.01)" Export="yes"
+Eqn:Eqn2 testF="assert(abs(F - 2.109) < 0.01)" Export="yes"

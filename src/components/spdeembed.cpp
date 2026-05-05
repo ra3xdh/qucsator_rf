@@ -31,6 +31,7 @@
 #include "poly.h"
 #include "spline.h"
 #include "interpolator.h"
+#include "constants.h"
 #include "spdeembed.h"
 
 using namespace qucs;
@@ -92,11 +93,7 @@ void spdeembed::initSP (void) {
   }
 }
 
-void spdeembed::calcSP (nr_double_t frequency) {
-
-  // nothing to do if the given file type had errors
-  if (spara == NULL || sfreq == NULL) return;
-
+matrix spdeembed::getDeembeddedS (nr_double_t frequency) {
   // set interpolated S-parameters
   matrix st = getInterpolMatrixS (frequency);
   int n = getSize() - 1; // size includes Ref port
@@ -154,7 +151,38 @@ void spdeembed::calcSP (nr_double_t frequency) {
       for (j = 0; j < n; j++)
         si.set(v[i], v[j], st.get(i, j));
   }
-  setMatrixS (expandSParaMatrix (si));
+  return si;
+}
+
+void spdeembed::calcSP (nr_double_t frequency) {
+  // nothing to do if the given file type had errors
+  if (spara == NULL || sfreq == NULL) return;
+  setMatrixS (expandSParaMatrix (getDeembeddedS (frequency)));
+}
+
+matrix spdeembed::calcMatrixCs (nr_double_t frequency) {
+  matrix s_orig = getInterpolMatrixS (frequency);
+  matrix cs_orig = computeNoiseCs (frequency, s_orig, getPropertyDouble ("Temp"));
+
+  matrix si = getDeembeddedS (frequency);
+  matrix cs_deembed = -(si * cs_orig * adjoint (si));
+
+  return expandNoiseMatrix (cs_deembed, expandSParaMatrix (si));
+}
+
+void spdeembed::calcNoiseSP (nr_double_t frequency) {
+  if (spara == NULL || sfreq == NULL) return;
+  setMatrixN (calcMatrixCs (frequency));
+}
+
+void spdeembed::calcNoiseAC (nr_double_t frequency) {
+  if (spara == NULL || sfreq == NULL) return;
+  setMatrixN (cstocy (calcMatrixCs (frequency), getMatrixY () * z0) / z0);
+}
+
+matrix spdeembed::expandNoiseMatrix (matrix n, matrix s) {
+  nr_double_t T = getPropertyDouble ("Temp");
+  return spfile::expandNoiseMatrix (n, s, T);
 }
 
 void spdeembed::initDC (void) {
