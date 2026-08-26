@@ -25,11 +25,14 @@
 #ifndef __OPEN_H__
 #define __OPEN_H__
 
-class open : public qucs::circuit
-{
- public:
-  open ();
-  void initSP (void);
-};
+namespace qucs {
+
+  class open : public qucs::circuit
+  {
+  public:
+    open ();
+    void initSP (void);
+  };
+}
 
 #endif /* __OPEN_H__ */
