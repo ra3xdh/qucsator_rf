@@ -74,6 +74,9 @@ jobs:
       run: |
         cmake.exe -B build/ -G "Ninja" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
         cmake.exe --build build/ --parallel --config ${{env.BUILD_TYPE}}
+
+    - name: CTest
+      run: ctest --test-dir build --output-on-failure
         
   build-windows-msys2:
     runs-on: windows-latest
@@ -106,4 +109,7 @@ jobs:
       run: |
         cmake.exe -B build/ -G "Ninja" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
         cmake.exe --build build/ --parallel --config ${{env.BUILD_TYPE}}
+
+    - name: CTest
+      run: ctest --test-dir build --output-on-failure
     

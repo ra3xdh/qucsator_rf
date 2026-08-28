@@ -38,6 +38,9 @@ jobs:
       run: |
         cmake --build ${{github.workspace}}/build --parallel --config ${{env.BUILD_TYPE}}
 
+    - name: CTest
+      run: ctest --test-dir ${{github.workspace}}/build --output-on-failure
+
   build-mac-arm:
     runs-on: macos-latest
     
@@ -65,3 +68,6 @@ jobs:
     - name: Build
       run: |
         cmake --build ${{github.workspace}}/build --parallel --config ${{env.BUILD_TYPE}}
+
+    - name: CTest
+      run: ctest --test-dir ${{github.workspace}}/build --output-on-failure

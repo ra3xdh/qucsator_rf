@@ -36,6 +36,15 @@ class spdeembed : public spfile, public qucs::circuit
   void initDC (void);
   void initAC (void);
   void calcAC (nr_double_t);
+
+  void calcNoiseSP (nr_double_t);
+  void calcNoiseAC (nr_double_t);
+
+  qucs::matrix expandNoiseMatrix (qucs::matrix, qucs::matrix);
+  qucs::matrix calcMatrixCs (nr_double_t);
+
+ private:
+  qucs::matrix getDeembeddedS (nr_double_t);
 };
 
 #endif /* SPDEEMBED_H */
