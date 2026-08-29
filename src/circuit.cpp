@@ -229,22 +229,22 @@ void circuit::freeMatrixHB (void) {
 /* Allocates the HB-matrix memory. */
 void circuit::allocMatrixHB (void) {
   if (VectorQ) {
-    memset (VectorQ, 0, size * sizeof (nr_complex_t));
+    memset (static_cast<void*>(VectorQ), 0, size * sizeof (nr_complex_t));
   } else {
     VectorQ = new nr_complex_t[size];
   }
   if (MatrixQV) {
-    memset (MatrixQV, 0, size * size * sizeof (nr_complex_t));
+    memset (static_cast<void*>(MatrixQV), 0, size * size * sizeof (nr_complex_t));
   } else {
     MatrixQV = new nr_complex_t[size * size];
   }
   if (VectorCV) {
-    memset (VectorCV, 0, size * sizeof (nr_complex_t));
+    memset (static_cast<void*>(VectorCV), 0, size * sizeof (nr_complex_t));
   } else {
     VectorCV = new nr_complex_t[size];
   }
   if (VectorGV) {
-    memset (VectorGV, 0, size * sizeof (nr_complex_t));
+    memset (static_cast<void*>(VectorGV), 0, size * sizeof (nr_complex_t));
   } else {
     VectorGV = new nr_complex_t[size];
   }
@@ -253,7 +253,7 @@ void circuit::allocMatrixHB (void) {
 /* Allocates the S-parameter matrix memory. */
 void circuit::allocMatrixS (void) {
   if (MatrixS) {
-    memset (MatrixS, 0, size * size * sizeof (nr_complex_t));
+    memset (static_cast<void*>(MatrixS), 0, size * size * sizeof (nr_complex_t));
   } else {
     MatrixS = new nr_complex_t[size * size];
   }
@@ -654,8 +654,8 @@ void circuit::setMatrixS (matrix s) {
    circuit. */
 matrix circuit::getMatrixS (void) {
   matrix res (size);
-  for(unsigned int i=0; i < size; ++i)
-    for(unsigned int j=0; j < size; ++j)
+  for(int i=0; i < size; ++i)
+    for(int j=0; j < size; ++j)
       res(i,j) = MatrixS[i*size + j];
   return res;
 }
@@ -675,8 +675,8 @@ void circuit::setMatrixN (matrix n) {
    matrix of the circuit. */
 matrix circuit::getMatrixN (void) {
   matrix res (size);
-  for(unsigned int i=0; i < size; ++i)
-    for(unsigned int j=0; j < size; ++j)
+  for(int i=0; i < size; ++i)
+    for(int j=0; j < size; ++j)
       res(i,j) = MatrixN[i*size + j];
   return res;
 }
@@ -696,50 +696,50 @@ void circuit::setMatrixY (matrix y) {
    circuit. */
 matrix circuit::getMatrixY (void) {
   matrix res (size);
-  for(unsigned int i=0; i < size; ++i)
-    for(unsigned int j=0; j < size; ++j)
+  for(int i=0; i < size; ++i)
+    for(int j=0; j < size; ++j)
       res(i,j) = MatrixY[i*size + j];
   return res;
 }
 
 // The function cleans up the B-MNA matrix entries.
 void circuit::clearB (void) {
-  memset (MatrixB, 0, sizeof (nr_complex_t) * size * vsources);
+  memset (static_cast<void*>(MatrixB), 0, sizeof (nr_complex_t) * size * vsources);
 }
 
 // The function cleans up the C-MNA matrix entries.
 void circuit::clearC (void) {
-  memset (MatrixC, 0, sizeof (nr_complex_t) * size * vsources);
+  memset (static_cast<void*>(MatrixC), 0, sizeof (nr_complex_t) * size * vsources);
 }
 
 // The function cleans up the D-MNA matrix entries.
 void circuit::clearD (void) {
-  memset (MatrixD, 0, sizeof (nr_complex_t) * vsources * vsources);
+  memset (static_cast<void*>(MatrixD), 0, sizeof (nr_complex_t) * vsources * vsources);
 }
 
 // The function cleans up the E-MNA matrix entries.
 void circuit::clearE (void) {
-  memset (VectorE, 0, sizeof (nr_complex_t) * vsources);
+  memset (static_cast<void*>(VectorE), 0, sizeof (nr_complex_t) * vsources);
 }
 
 // The function cleans up the J-MNA matrix entries.
 void circuit::clearJ (void) {
-  memset (VectorJ, 0, sizeof (nr_complex_t) * vsources);
+  memset (static_cast<void*>(VectorJ), 0, sizeof (nr_complex_t) * vsources);
 }
 
 // The function cleans up the I-MNA matrix entries.
 void circuit::clearI (void) {
-  memset (VectorI, 0, sizeof (nr_complex_t) * size);
+  memset (static_cast<void*>(VectorI), 0, sizeof (nr_complex_t) * size);
 }
 
 // The function cleans up the V-MNA matrix entries.
 void circuit::clearV (void) {
-  memset (VectorV, 0, sizeof (nr_complex_t) * size);
+  memset (static_cast<void*>(VectorV), 0, sizeof (nr_complex_t) * size);
 }
 
 // The function cleans up the G-MNA matrix entries.
 void circuit::clearY (void) {
-  memset (MatrixY, 0, sizeof (nr_complex_t) * size * size);
+  memset (static_cast<void*>(MatrixY), 0, sizeof (nr_complex_t) * size * size);
 }
 
 /* This function can be used by several components in order to place

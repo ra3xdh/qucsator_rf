@@ -76,14 +76,14 @@ using namespace fspecial;
 #define _ARES(idx) args->getResult(idx)
 #define _ARG(idx) args->get(idx)
 
-#define _D(var,idx) nr_double_t (var) = D (_ARES (idx));
-#define _BO(var,idx) bool (var) = B (_ARES (idx));
-#define _CX(var,idx) nr_complex_t * (var) = C (_ARES (idx));
-#define _V(var,idx) qucs::vector * (var) = V (_ARES (idx));
-#define _M(var,idx) matrix * (var) = M (_ARES (idx));
-#define _MV(var,idx) matvec * (var) = MV (_ARES (idx));
-#define _I(var,idx) int (var) = INT (_ARES (idx));
-#define _R(var,idx) range * (var) = RNG (_ARES (idx));
+#define _D(var,idx) nr_double_t var = D (_ARES (idx));
+#define _BO(var,idx) bool var = B (_ARES (idx));
+#define _CX(var,idx) nr_complex_t * var = C (_ARES (idx));
+#define _V(var,idx) qucs::vector * var = V (_ARES (idx));
+#define _M(var,idx) matrix * var = M (_ARES (idx));
+#define _MV(var,idx) matvec * var = MV (_ARES (idx));
+#define _I(var,idx) int var = INT (_ARES (idx));
+#define _R(var,idx) range * var = RNG (_ARES (idx));
 
 #define _ARR0(var) _R (var,0)
 #define _ARR1(var) _R (var,1)

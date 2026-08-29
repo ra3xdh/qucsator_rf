@@ -346,7 +346,7 @@ valuelist<int> * mdl_find_depdataset (struct mdl_link_t * link,
       else if (!strcmp (hyptab->name, "List Table")) {
 	lstsweep * sw = new lstsweep ();
 	sw->create (nof);
-	char txt[16];
+	char txt[32];
 	for (int i = 0; i < nof; i++) {
 	  sprintf (txt, "Value %d", i + 1);
 	  val = mdl_helement_dvalue (link, hyptab->data, txt);
@@ -418,7 +418,7 @@ static void mdl_find_varlink (struct mdl_link_t * link, char * name,
 // Sorts a dependency list according to their sweep order.
 static strlist * mdl_sort_deps (valuelist<int> * d) {
   strlist * deps = new strlist ();
-  for (int i = 0; i < d->size(); i++) {
+  for (int i = 0; i < static_cast<int>(d->size()); i++) {
     for (auto &val: *d) {
       if (val.second == i + 1) {
 	deps->append (val.first.c_str());

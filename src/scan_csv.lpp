@@ -103,7 +103,7 @@ SPACE    [ \t]
     logprint (LOG_ERROR,
 	      "line %d: syntax error, unrecognized character: `%s'\n",
 	      csv_lineno, csv_text);
-    return InvalidCharacter;
+    REJECT;
   }
 
 <COMMENT>.     { /* skip any character in here */ }

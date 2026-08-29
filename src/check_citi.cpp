@@ -89,8 +89,7 @@ static char * citi_get_package (struct citi_package_t * p) {
 }
 
 /* Create a valid vector for the dataset. */
-static qucs::vector * citi_create_vector (struct citi_package_t * p, int i,
-				    char * n, char * type) {
+static qucs::vector * citi_create_vector (struct citi_package_t * p, int i, char * n, char * type) {
   qucs::vector * vec;
   vec = citi_get_vector (p, i); // fetch vector
   vec = new qucs::vector (*vec);      // copy vector
@@ -195,8 +194,8 @@ int citi_check (void) {
     int cvar = citi_count_variables (p);
     if (cvec != cvar) {
       logprint (LOG_ERROR, "checker error, no. of vectors (%d) does not equal "
-		"no. of variables (%d) in package `%s'\n", cvec, cvar,
-		package);
+        "no. of variables (%d) in package `%s'\n", cvec, cvar,
+        package);
       errors++;
       break;
     }
@@ -213,50 +212,50 @@ int citi_check (void) {
     for (h = p->head; h != NULL; h = h->next) {
       qucs::vector * v;
       if (h->var != NULL) {
-	char txt[256];
-	if (h->i1 >= 0) {
-	  /* dependent variables */
-	  if (h->i2 >= 0) {
-	    sprintf (txt, "%s%s[%d,%d]", opack, h->var, h->i1, h->i2);
-	    v = citi_create_vector (p, n, txt, h->type);
-	    v->setDependencies (new strlist (deps));
-	    errors += citi_check_dep_length (v, deps, package);
-	    citi_result->addVariable (v);
-	    n++;
-	  } else {
-	    sprintf (txt, "%s%s[%d]", opack, h->var, h->i1);
-	    v = citi_create_vector (p, n, txt, h->type);
-	    v->setDependencies (new strlist (deps));
-	    errors += citi_check_dep_length (v, deps, package);
-	    citi_result->addVariable (v);
-	    n++;
-	  }
-	} else if (h->n >= 0) {
-	  /* independent variable */
-	  sprintf (txt, "%s%s", opack, h->var);
-	  v = citi_create_vector (p, n, txt, h->type);
-	  deps.add (txt);
-	  if (!citi_result->findDependency (txt)) {
-	    /* add independent vectors only once */
-	    citi_result->addDependency (v);
-	  }
-	  n++;
-	  // check length of independent vector
-	  if (v->getSize () != h->n) {
-	    logprint (LOG_ERROR, "checker error, vector `%s' length (%d) "
-		      "does not equal defined length (%d) in package `%s'\n",
-		      h->var, v->getSize (), h->n, package);
-	    errors++;
-	  }
-	} else {
-	  /* dependent variables, no indices */
-	  sprintf (txt, "%s%s", opack, h->var);
-	  v = citi_create_vector (p, n, txt, h->type);
-	  v->setDependencies (new strlist (deps));
-	  errors += citi_check_dep_length (v, deps, package);
-	  citi_result->addVariable (v);
-	  n++;
-	}
+        char txt[sizeof(opack) + 16];
+        if (h->i1 >= 0) {
+          /* dependent variables */
+          if (h->i2 >= 0) {
+            sprintf (txt, "%s%s[%d,%d]", opack, h->var, h->i1, h->i2);
+            v = citi_create_vector (p, n, txt, h->type);
+            v->setDependencies (new strlist (deps));
+            errors += citi_check_dep_length (v, deps, package);
+            citi_result->addVariable (v);
+            n++;
+          } else {
+            sprintf (txt, "%s%s[%d]", opack, h->var, h->i1);
+            v = citi_create_vector (p, n, txt, h->type);
+            v->setDependencies (new strlist (deps));
+            errors += citi_check_dep_length (v, deps, package);
+            citi_result->addVariable (v);
+            n++;
+          }
+        } else if (h->n >= 0) {
+          /* independent variable */
+          sprintf (txt, "%s%s", opack, h->var);
+          v = citi_create_vector (p, n, txt, h->type);
+          deps.add (txt);
+          if (!citi_result->findDependency (txt)) {
+            /* add independent vectors only once */
+            citi_result->addDependency (v);
+          }
+          n++;
+          // check length of independent vector
+          if (v->getSize () != h->n) {
+            logprint (LOG_ERROR, "checker error, vector `%s' length (%d) "
+              "does not equal defined length (%d) in package `%s'\n",
+              h->var, v->getSize (), h->n, package);
+            errors++;
+          }
+        } else {
+          /* dependent variables, no indices */
+          sprintf (txt, "%s%s", opack, h->var);
+          v = citi_create_vector (p, n, txt, h->type);
+          v->setDependencies (new strlist (deps));
+          errors += citi_check_dep_length (v, deps, package);
+          citi_result->addVariable (v);
+          n++;
+        }
       }
     }
   }

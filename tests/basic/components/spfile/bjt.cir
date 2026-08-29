@@ -1,0 +1,29 @@
+.title dual rc ladder
+* file name rcrcac.cir
+*R1 int in 10k
+*V1 in 0 dc 0 ac 1 PULSE (0 5 1u 1u 1u 1 1)
+*R2 out int 1k
+*C1 int 0 1u
+*C2 out 0 100n
+
+Q1 A B C BJTNAME
+Q2 20 21 22 NPN 1.0
+Q3 A B C BJTNAME 7.0 8.0
+Q4 1 2 3 BJTNAME
+Q5 20 20 97 PNP
+Q6 21 21 22 A B NPN 1.0
+Q7 A B C D BJTNAME
+
+.MODEL PNP PNP(BF=200 CJC=20pf CJE=20pf IS=1E-16)
+.MODEL NPN NPN(BF=200 CJC=20pf CJE=20pf IS=1E-16)
+.MODEL BJTNAME NPN(BF=200 CJC=20pf CJE=20pf IS=1E-16)
+
+.plot dc 1 2 3 4 5 6 7 8
+
+*.control
+*ac dec 10 1 100k
+*plot vdb(out)
+*plot ph(out)
+*.endc
+
+

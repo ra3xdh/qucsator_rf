@@ -51,7 +51,6 @@ using namespace qucs;
 
 %define api.prefix {csv_}
 
-%token InvalidCharacter
 %token Float
 %token Identifier
 %token Eol
@@ -66,7 +65,7 @@ using namespace qucs;
 %type <list> HeaderList HeaderLine
 %type <ident> Identifier Header
 %type <f> Float
-%type <v> DataLine DataSet DataList
+%type <v> DataSet DataList
 
 %%
 
@@ -89,10 +88,16 @@ Header:
   }
 ;
 
-HeaderList: /* nothing */ { $$ = NULL; }
+HeaderList:
+    Header {
+    $$ = new strlist ();
+    $$->add ($1);
+    free ($1);
+  }
   | Header HeaderList {
-    if ($2 == NULL) $2 = new strlist ();
-    $2->add ($1);
+    strlist* item = new strlist ();
+    item->add ($1);
+    $2->add (item);
     $$ = $2;
     free ($1);
   }
@@ -108,11 +113,11 @@ HeaderLine: /* header line */
 ;
 
 DataSet: /* nothing */ { $$ = NULL; }
-  | DataLine Eol DataSet { /* append vector lines */
+  | DataList Eol DataSet { /* append vector lines */
     $1->setNext ($3);
     $$ = $1;
   }
-  | DataLine { /* last line, no trailing end-of-line */
+  | DataList { /* last line, no trailing end-of-line */
     $$ = $1;
   }
   | Eol DataSet { /* skip this line */
@@ -120,10 +125,12 @@ DataSet: /* nothing */ { $$ = NULL; }
   }
 ;
 
-DataLine: DataList
-;
-
-DataList: /* nothing */ { $$ = NULL; }
+DataList:
+    Float {
+    if ($$ == NULL) $$ = new vector ();
+    $$ = new vector ();
+    $$->add ($1);
+  }
   | Float DataList {
     if ($2 == NULL) $2 = new vector ();
     $2->add ($1);
