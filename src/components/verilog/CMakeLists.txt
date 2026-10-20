@@ -58,7 +58,12 @@ foreach(script ${XML_BUILD})
 endforeach()
 
 # Process each Verilog-A file.
+#
+# admsXml writes .adms.implicit.xml and .interface.xml into its working
+# directory, so two runs in parallel corrupt each other's files. Make every
+# run depend on the output of the previous one to keep them sequential.
 set(gen_SRC)
+set(_previous)
 foreach(file ${VA_FILES})
   get_filename_component(_name ${file} NAME_WE)
   set(output
@@ -73,8 +78,9 @@ foreach(file ${VA_FILES})
     OUTPUT ${output}
     COMMAND ${ADMSXML} ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${XML_CMD} -o
             ${_name}
-    DEPENDS ${file} ${XML_BUILD})
+    DEPENDS ${file} ${XML_BUILD} ${_previous})
   list(APPEND gen_SRC ${_name}.cpp)
+  set(_previous ${CMAKE_CURRENT_BINARY_DIR}/${_name}.cpp)
 endforeach()
 
 add_library(coreVerilog OBJECT ${gen_SRC})
