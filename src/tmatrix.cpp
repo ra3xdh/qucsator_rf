@@ -57,7 +57,7 @@ tmatrix<nr_type_t>::tmatrix (int s)  {
   rows = cols = s;
   if (s > 0) {
     data = new nr_type_t[s * s];
-    memset (data, 0, sizeof (nr_type_t) * s * s);
+    memset (static_cast<void*>(data), 0, sizeof (nr_type_t) * s * s);
   }
   else data = NULL;
 }
@@ -70,7 +70,7 @@ tmatrix<nr_type_t>::tmatrix (int r, int c)  {
   cols = c;
   if (r > 0 && c > 0) {
     data = new nr_type_t[r * c];
-    memset (data, 0, sizeof (nr_type_t) * r * c);
+    memset (static_cast<void*>(data), 0, sizeof (nr_type_t) * r * c);
   }
   else data = NULL;
 }
@@ -294,7 +294,7 @@ tmatrix<nr_type_t> operator * (tmatrix<nr_type_t> a, tmatrix<nr_type_t> b) {
 // Multiplication of matrix and vector.
 template <class nr_type_t>
 tvector<nr_type_t> operator * (tmatrix<nr_type_t> a, tvector<nr_type_t> b) {
-  assert (a.getCols () == b.size ());
+  assert (a.getCols () == static_cast<int>(b.size ()));
   int r, c, n = a.getCols ();
   nr_type_t z;
   tvector<nr_type_t> res (n);
@@ -309,7 +309,7 @@ tvector<nr_type_t> operator * (tmatrix<nr_type_t> a, tvector<nr_type_t> b) {
 // Multiplication of vector (transposed) and matrix.
 template <class nr_type_t>
 tvector<nr_type_t> operator * (tvector<nr_type_t> a, tmatrix<nr_type_t> b) {
-  assert (a.size () == b.getRows ());
+  assert (static_cast<int>(a.size ()) == b.getRows ());
   int r, c, n = b.getRows ();
   nr_type_t z;
   tvector<nr_type_t> res (n);

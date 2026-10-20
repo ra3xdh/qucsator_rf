@@ -1401,7 +1401,7 @@ checker::~checker ()
 
 // Local macro definition to go through the list of equations.
 #define foreach_equation(eqn)                        \
-  for (assignment * (eqn) = A (equations);           \
+  for (assignment * eqn = A (equations);           \
        (eqn) != NULL; (eqn) = A ((eqn)->getNext ()))
 
 /* The function goes through the list of equations assigned to the
@@ -2187,6 +2187,7 @@ int solver::dataSize (constant * eqn)
         break;
     case TAG_MATVEC: // matrix vector
         size = eqn->getResult()->mv->getSize ();
+        break;
     default:
         size = 1;
     }

@@ -881,7 +881,7 @@ static void spice_translate_nodes (struct definition_t * def, int pass) {
 	  node->node = strdup (t->node);
 	else {
 	  // no node given, occurs in device descriptions
-	  char txt[16];
+	  char txt[17];
 	  sprintf (txt, "%s%d", "_node", n);
 	  node->node = strdup (txt);
 	}

@@ -192,6 +192,15 @@ char * strlist::toString (const char * concat) {
   return txt ? txt : (char *) "";
 }
 
+strlist& strlist::operator=(const strlist& rhs)
+{
+  struct strlist_t * s;
+  root = NULL;
+  txt = NULL;
+  for (s = rhs.root; s != NULL; s = s->next) append (s->str);
+  return *this;
+}
+
 // Constructor for string list iterator.
 strlistiterator::strlistiterator (strlist & s) {
   _strlist = &s;

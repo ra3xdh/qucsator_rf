@@ -44,6 +44,14 @@
 
 #include "check_spice.h"
 
+#define YY_HEADER_EXPORT_START_CONDITIONS
+#include "scan_spice.hpp"
+
+extern char* spice_text;
+
+extern void push_state(int state);
+extern void pop_state();
+
 // Converts the given string into upper case.
 static char * spice_toupper (char * str) {
   for (unsigned int i = 0; i < strlen (str); i++) {
@@ -131,7 +139,8 @@ static struct value_t * spice_append_val_values (struct value_t * values,
 %define api.prefix {spice_}
 
 %token TitleLine InvalidCharacter End Eol
-%token Identifier Digits Floats Nodes Options Function
+%token Identifier Digits Floats Nodes Options Function Lookahead_Double_Value
+%token Lookahead_Three_Node Lookahead_Four_Node Lookahead_Five_Node
 %token SUBCKT_Action ENDS_Action AC_Action OP_Action I_Source SAVE_Action
 %token RLC_Device L_Device K_Device IV_Source GE_Source FH_Source V_Source
 %token Diode_Device Bipolar_Device JFET_Device MOSFET_Device MESFET_Device
@@ -142,6 +151,9 @@ static struct value_t * spice_append_val_values (struct value_t * values,
 %token DISTO_Action INCLUDE_Action File BranchFunc NODESET_Action T_Device
 %token U_Device S_Device W_Device ON_Special TF_Action SENS_Action FOUR_Action
 %token OpFunc Behave TC_Special TEMP_Action
+
+%precedence Identifier Digits Nodes
+%precedence _NODE_
 
 %union {
   char * ident;
@@ -162,7 +174,7 @@ static struct value_t * spice_append_val_values (struct value_t * values,
 %type <value> IC_Condition_4 SWITCH_State NodeValueList TC_Value_1 TC_Value_2
 %type <value> VSourceList
 
-%type <ident> Identifier Nodes Function Value Floats Digits Node FH_Node
+%type <ident> Identifier Nodes Function Value Lookahead_Double_Value Floats Digits Node FH_Node
 %type <ident> RLC_Device K_Device L_Device IV_Source GE_Source FH_Source
 %type <ident> V_Source MODEL_Spec Diode_Device Bipolar_Device JFET_Device
 %type <ident> MOSFET_Device MESFET_Device TRAN_Action PLOT_Action MODEL_Action
@@ -174,7 +186,7 @@ static struct value_t * spice_append_val_values (struct value_t * values,
 %type <ident> IC_Special OFF_Special SIM_Type TEMP_Special MOS_Special
 %type <ident> BranchFunc NODESET_Action T_Device U_Device S_Device W_Device
 %type <ident> TF_Action SENS_Action FOUR_Action OpFunc TC_Special TEMP_Action
-%type <ident> Behave
+%type <ident> Behave Lookahead_Three_Node Lookahead_Four_Node Lookahead_Five_Node
 
 %%
 
@@ -374,7 +386,7 @@ DefinitionLine:
     spice_append_str_value ($$, $5, HINT_NAME);
     $$->values = netlist_append_values ($$->values, $6);
   }
-  | Bipolar_Device Node Node Node MODEL_Ident DEVICE_List_2 {
+  | Bipolar_Device Lookahead_Three_Node Node Node MODEL_Ident DEVICE_List_2 {
     /* 3 node BJT */
     $$ = spice_create_device ($1);
     spice_append_str_value ($$, $2, HINT_NODE);
@@ -383,7 +395,7 @@ DefinitionLine:
     spice_append_str_value ($$, $5, HINT_NAME);
     $$->values = netlist_append_values ($$->values, $6);
   }
-  | Bipolar_Device Node Node Node Node MODEL_Ident DEVICE_List_2 {
+  | Bipolar_Device Lookahead_Four_Node Node Node Node MODEL_Ident DEVICE_List_2 {
     /* 4 node BJT */
     $$ = spice_create_device ($1);
     spice_append_str_value ($$, $2, HINT_NODE);
@@ -393,7 +405,7 @@ DefinitionLine:
     spice_append_str_value ($$, $6, HINT_NAME);
     $$->values = netlist_append_values ($$->values, $7);
   }
-  | Bipolar_Device Node Node Node Node Node MODEL_Ident DEVICE_List_2 {
+  | Bipolar_Device Lookahead_Five_Node Node Node Node Node MODEL_Ident DEVICE_List_2 {
     /* 5 node BJT */
     $$ = spice_create_device ($1);
     spice_append_str_value ($$, $2, HINT_NODE);
@@ -661,7 +673,7 @@ IC_Condition_4:
 ;
 
 Output_Range:
-  Value Value { /* range specification during plotting */
+  Lookahead_Double_Value Value { /* range specification during plotting */
     $$ = NULL;
     $$ = spice_append_val_values ($$, $1, HINT_NUMBER);
     $$ = spice_append_val_values ($$, $2, HINT_NUMBER);
@@ -669,13 +681,14 @@ Output_Range:
 ;
 
 VOLTAGE_Output:
-  Node { // TODO: 2 reduce/reduce, 2 shift/reduce
+  Node {
     /* print/plot specification of node voltage */
+    push_state(DOUBLEVALUE);
     $$ = NULL;
     $$ = spice_append_str_values ($$, strdup ("V"), HINT_NAME | HINT_MSTART);
     $$ = spice_append_str_values ($$, $1, HINT_NODE | HINT_MSTOP);
   }
-  | VoltFunc Node { // TODO: 2 reduce/reduce
+  | VoltFunc Node %prec _NODE_ {
     /* print/plot specification of node voltage */
     $$ = NULL;
     $$ = spice_append_str_values ($$, $1, HINT_NAME | HINT_MSTART);
@@ -843,7 +856,7 @@ DEVICE_List_3: /* nothing */ { $$ = NULL; }
     $$ = netlist_append_values ($$, $2);
   }
   | IC_Condition_3 DEVICE_List_3 {
-    $$ = netlist_append_values ($1, $2);
+     $$ = netlist_append_values ($1, $2);
   }
 ;
 
@@ -969,6 +982,6 @@ SubBodyLine:
 %%
 
 int spice_error (const char * error) {
-  fprintf (stderr, "line %d: %s\n", spice_lineno, error);
+  fprintf (stderr, "line %d: %s at id %d, token '%s'\n", spice_lineno, error, spice_char, spice_text);
   return 0;
 }

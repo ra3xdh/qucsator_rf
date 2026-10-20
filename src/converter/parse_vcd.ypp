@@ -91,7 +91,7 @@
 }
 
 %type <ident> Identifier IdentifierCode Reference
-%type <value> Value ZERO ONE Z X Binary Real
+%type <value> Value ZERO ONE Z Binary Real U
 %type <integer> Size PositiveInteger TimeScale
 %type <real> TimeUnit SimulationTime PositiveHugeInteger
 %type <change> ScalarValueChange VectorValueChange ValueChangeList ValueChange

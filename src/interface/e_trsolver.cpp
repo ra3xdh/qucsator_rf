@@ -371,7 +371,7 @@ void e_trsolver::printx()
 {
     char buf [1024];
 
-    for (int r = 0; r < x->size(); r++) {
+    for (int r = 0; r < static_cast<int>(x->size()); r++) {
         buf[0] = '\0';
         //sprintf (buf, "%+.2e%+.2ei", (double) real (x->get (r)), (double) imag (x->get (r)));
 
@@ -552,7 +552,7 @@ void e_trsolver::acceptstep_sync()
 
 /* This function tries to adapt the current time-step according to the
    global truncation error. */
-void e_trsolver::adjustDelta_sync (nr_double_t t)
+void e_trsolver::adjustDelta_sync (nr_double_t /* t */)
 {
     deltaOld = delta;
 
@@ -830,7 +830,7 @@ void e_trsolver::copySolution (tvector<nr_double_t> * src[8], tvector<nr_double_
         // check sizes are the same
         assert (src[i]->size () == dest[i]->size ());
         // copy over the data values
-        for (int j = 0; j < src[i]->size (); j++)
+        for (int j = 0; j < static_cast<int>(src[i]->size ()); j++)
         {
             dest[i]->set (j, src[i]->get (j));
         }

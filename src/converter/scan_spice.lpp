@@ -50,7 +50,6 @@
 #include "check_spice.h"
 #include "parse_spice.hpp"
 
-
 /* fixing invalid identifiers */
 static void spice_fix_identifier (char * ident) {
   char * p;
@@ -62,9 +61,25 @@ static void spice_fix_identifier (char * ident) {
     }
 }
 
+static void yy_push_state(int);
+static void yy_pop_state();
+static int yy_top_state();
+
+void push_state(int state) {
+    yy_push_state(state);
+}
+
+void pop_state() {
+    yy_pop_state();
+}
+
+int top_state() {
+    return yy_top_state();
+}
+
 %}
 
-WS       [ \t\n\r]
+WS       [ \t]
 TITLE    [* \t0-9A-Za-z][A-Za-z0-9\- \t;#:=()/\.,*\\]*\r*\n
 SPACE    [ \t]
 NAME     [A-Z][A-Z0-9]*
@@ -136,8 +151,8 @@ POLY     [pP][oO][lL][yY]
 
 %x COMMENT IVREF DEVPROP LREF MODREF1 MODREF2 IGNORE FUNREF FILEREF VREF
 %x STARTUP VSINGLE ISWITCH VSWITCH CONTROL GEVALS INLINE SUBCKT TLPROP RLCPROP
-%x FHVALS
-%option yylineno noyywrap nounput noinput prefix="spice_"
+%x FHVALS DOUBLEVALUE LANODE
+%option yylineno stack noyywrap nounput noinput prefix="spice_" header-file="scan_spice.hpp"
 %%
 
 <INITIAL>^{TITLE} { /* detect initial title lines */
@@ -501,6 +516,7 @@ POLY     [pP][oO][lL][yY]
 <STARTUP>^[qQ]{CSFX} { /* BJT instances */
     spice_lval.ident = strdup (spice_text);
     BEGIN(DEVPROP);
+    push_state(LANODE);
     return Bipolar_Device;
 }
 
@@ -526,17 +542,51 @@ POLY     [pP][oO][lL][yY]
     return End;
 }
 
+<DOUBLEVALUE>{NUMBER}|{DIGIT}+/{WS}({DIGIT}+|NUMBER) {
+    /* identify value followed by value */
+    spice_lval.ident = strdup (spice_text);
+    pop_state();
+    return Lookahead_Double_Value;
+}
+
+<LANODE>{NODE}|{IDENT}|{DIGIT}+/{WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({MODEL}|{IDENT}) {
+    /* identify node followed by 2 node */
+    spice_lval.ident = strdup (spice_text);
+    pop_state();
+    return Lookahead_Three_Node;
+}
+
+<LANODE>{NODE}|{IDENT}|{DIGIT}+/{WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({MODEL}|{IDENT}) {
+    /* identify node followed by 3 node */
+    spice_lval.ident = strdup (spice_text);
+    pop_state();
+    return Lookahead_Four_Node;
+}
+
+<LANODE>{NODE}|{IDENT}|{DIGIT}+/{WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({DIGIT}+|{NODE}|{IDENT}){WS}+({MODEL}|{IDENT}) {
+    /* identify node followed by 4 node */
+    spice_lval.ident = strdup (spice_text);
+    pop_state();
+    return Lookahead_Five_Node;
+}
+
 <STARTUP,IVREF,DEVPROP,LREF,FUNREF,VREF,VSINGLE,ISWITCH,VSWITCH,
- GEVALS,TLPROP,RLCPROP,FHVALS>{DIGIT}+ {
+ GEVALS,TLPROP,RLCPROP,FHVALS,DOUBLEVALUE>{DIGIT}+ {
     /* identify node (containing digits) */
     spice_lval.ident = strdup (spice_text);
+    if (yy_start_stack_ptr > 0 && top_state() == DOUBLEVALUE) {
+      pop_state();
+    }
     return Digits;
 }
 
 <STARTUP,IVREF,DEVPROP,LREF,FUNREF,VREF,VSINGLE,GEVALS,TLPROP,
- RLCPROP,FHVALS>{NUMBER} {
+ RLCPROP,FHVALS,DOUBLEVALUE>{NUMBER} {
     /* identify float (any kind) */
     spice_lval.ident = strdup (spice_text);
+    if (yy_start_stack_ptr > 0 && top_state() == DOUBLEVALUE) {
+      pop_state();
+    }
     return Floats;
 }
 
@@ -565,9 +615,12 @@ POLY     [pP][oO][lL][yY]
 }
 
 <STARTUP,DEVPROP,MODREF2,ISWITCH,VSWITCH,
- TLPROP,RLCPROP>{IDENT} { /* arbitrary identifier */
+ TLPROP,RLCPROP,DOUBLEVALUE>{IDENT} { /* arbitrary identifier */
     spice_lval.ident = strdup (spice_text);
     spice_fix_identifier (spice_lval.ident);
+    if (yy_start_stack_ptr > 0 && top_state() == DOUBLEVALUE) {
+      pop_state();
+    }
     return Identifier;
 }
 
@@ -598,15 +651,21 @@ POLY     [pP][oO][lL][yY]
 }
 
 <STARTUP,IVREF,DEVPROP,FUNREF,VREF,VSINGLE,ISWITCH,VSWITCH,GEVALS,
- TLPROP,RLCPROP,FHVALS>{NODE} {
+ TLPROP,RLCPROP,FHVALS,DOUBLEVALUE>{NODE} {
     /* identify node */
     spice_lval.ident = strdup (spice_text);
+    if (yy_start_stack_ptr > 0 && top_state() == DOUBLEVALUE) {
+      pop_state();
+    }
     return Nodes;
 }
 
 <STARTUP,IVREF,DEVPROP,LREF,IGNORE,FUNREF,FILEREF,VREF,VSINGLE,
- ISWITCH,VSWITCH,GEVALS,SUBCKT,TLPROP,RLCPROP,FHVALS>{EOL} {
+ ISWITCH,VSWITCH,GEVALS,SUBCKT,TLPROP,RLCPROP,FHVALS,DOUBLEVALUE>{EOL} {
     /* detect end of line */
+    if (yy_start_stack_ptr > 0 && top_state() == DOUBLEVALUE) {
+      pop_state();
+    }
     BEGIN(STARTUP);
     return Eol;
 }

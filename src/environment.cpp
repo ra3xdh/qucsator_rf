@@ -294,7 +294,7 @@ void environment::setValue (char * n, constant * value) {
 
 // Local macro definition to go through the list of equations.
 #define foreach_equation(eqn)                        \
-  for (assignment * (eqn) = A (equations);           \
+  for (assignment * eqn = A (equations);             \
        (eqn) != NULL; (eqn) = A ((eqn)->getNext ()))
 
 // Short helper macro.

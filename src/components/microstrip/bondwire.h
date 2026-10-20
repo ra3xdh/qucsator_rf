@@ -39,7 +39,7 @@ class bondwire : public qucs::circuit
   void initTR (void);
   void calcDC (void);
   void calcAC (nr_double_t);
-  void calcTR (nr_double_t);
+  void calcTR ();
   void calcNoiseAC (nr_double_t);
   qucs::matrix calcMatrixY (nr_double_t);
   void saveCharacteristics (nr_double_t);
