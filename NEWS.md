@@ -1,3 +1,7 @@
+# QucsatorRF v1.0.8
+
+* Fixed operation of saveCVs options for SP simulation
+
 # QucsatorRF v1.0.7
 
 * Fixed microstrip tee model #39
