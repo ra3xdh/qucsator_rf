@@ -1,0 +1,7 @@
+# Characteristic impedance of a matched RLCG line.
+
+RLCG:Transmission1 input out R="0" L="2.5e-7" C="1e-10" G="0" Length="1"
+Pac:P1 input gnd Num="1" Z="50" P="0 dBm" f="1 MHz"
+Pac:P2 out gnd Num="2" Z="50" P="0 dBm" f="1 MHz"
+.SP:S1 Type="lin" Start="1 MHz" Stop="2 MHz" Points="2" Noise="no" saveCVs="yes"
+Eqn:Eqn1 assertZl="assert(abs(Transmission1.Zl-50)<1e-12)" assertLength="assert(length(Transmission1.Zl)==2)" assertS21="assert(abs(S[2,1]-exp(-j*2*pi*frequency*5e-9))<1e-12)" Export="yes"

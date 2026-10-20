@@ -1076,10 +1076,9 @@ char * spsolver::createSP (int i, int j) {
   return matvec::createMatrixString ("S", i - 1, j - 1);
 }
 
-/* Create an appropriate variable name for characteristic values.  The
-   caller is responsible to free() the returned string. */
-const char * spsolver::createCV (const std::string &c, const std::string &n) {
-  return (c+"."+n).c_str();
+// Create an appropriate variable name for characteristic values.
+std::string spsolver::createCV (const std::string &c, const std::string &n) {
+  return c+"."+n;
 }
 
 /* Goes through the list of circuit objects and runs its
@@ -1087,7 +1086,6 @@ const char * spsolver::createCV (const std::string &c, const std::string &n) {
    dataset. */
 void spsolver::saveCharacteristics (nr_double_t freq) {
   circuit * root = subnet->getRoot ();
-  const char * n;
   vector * f = data->findDependency ("frequency");
   for (circuit * c = root; c != NULL; c = (circuit *) c->getNext ()) {
     c->saveCharacteristics (freq);
@@ -1095,7 +1093,7 @@ void spsolver::saveCharacteristics (nr_double_t freq) {
     c->calcCharacteristics (freq);
     for (auto ps: c->getCharacteristics ()) {
       characteristic &p = ps.second;
-      n = createCV (c->getName (), p.getName ());
+      std::string n = createCV (c->getName (), p.getName ());
       saveVariable (n, p.getValue (), f);
     }
   }

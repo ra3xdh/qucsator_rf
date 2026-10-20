@@ -62,7 +62,7 @@ class spsolver : public analysis
   void saveNoiseResults (nr_complex_t[4], nr_complex_t[4],
 			 nr_double_t, vector *);
   char * createSP (int, int);
-  const char * createCV (const std::string &c, const std::string &n);
+  std::string createCV (const std::string &c, const std::string &n);
   void saveCharacteristics (nr_double_t);
   void dropTee (circuit *);
   void dropCross (circuit *);
