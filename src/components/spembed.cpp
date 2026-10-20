@@ -32,6 +32,7 @@
 #include "poly.h"
 #include "spline.h"
 #include "interpolator.h"
+#include "constants.h"
 #include "spembed.h"
 
 using namespace qucs;
@@ -104,19 +105,14 @@ void spembed::calcSP (nr_double_t frequency) {
 
 void spembed::calcNoiseSP (nr_double_t frequency) {
   // nothing to do if the given file type had errors
-  if (spara == NULL || nfreq == NULL) return;
+  if (spara == NULL || sfreq == NULL) return;
   setMatrixN (calcMatrixCs (frequency));
 }
 
 matrix spembed::calcMatrixCs (nr_double_t frequency) {
-  // set interpolated noise correlation matrix
-  nr_double_t r = real (RN->interpolate (frequency));
-  nr_double_t f = real (FMIN->interpolate (frequency));
-  nr_complex_t g = SOPT->interpolate (frequency);
   matrix s = getInterpolMatrixS (frequency);
-  matrix n = correlationMatrix (f, g, r, s);
-  matrix c = expandNoiseMatrix (n, expandSParaMatrix (s));
-  return c;
+  matrix cs = computeNoiseCs (frequency, s, getPropertyDouble ("Temp"));
+  return expandNoiseMatrix (cs, expandSParaMatrix (s));
 }
 
 /* This function expands the actual noise correlation matrix to have an
@@ -125,121 +121,13 @@ matrix spembed::calcMatrixCs (nr_double_t frequency) {
    this transformation and is obtained using the expandSParaMatrix()
    function. */
 matrix spembed::expandNoiseMatrix (matrix n, matrix s) {
-  assert (s.getCols () == s.getRows () && n.getCols () == n.getRows () &&
-	  n.getCols () == s.getCols () - 1);
   nr_double_t T = getPropertyDouble ("Temp");
-  int r, c, ports = n.getCols () + 1;
-  nr_double_t g = -1;
-
-  // create K matrix
-  matrix k (ports, ports - 1);
-  for (r = 0; r < ports - 1; r++) {
-    for (c = 0; c < ports - 1; c++) {
-      if (r == c)
-	k.set (r, c, 1.0 + g * (s.get (r, ports - 1) - 1.0));
-      else
-	k.set (r, c, g * s.get (r, ports - 1));
-    }
-  }
-  for (c = 0; c < ports - 1; c++)
-    k.set (ports - 1, c, g * s.get (ports - 1, ports - 1) - 1.0);
-
-  // create D vector
-  matrix d (ports, 1);
-  for (r = 0; r < ports - 1; r++) d.set (r, 0, s.get (r, ports - 1));
-  d.set (ports - 1, 0, s.get (ports - 1, ports - 1) - 1.0);
-
-  // expand noise correlation matrix
-  matrix res (ports);
-  res = (k * n * adjoint (k) - celsius2kelvin (T) / T0 * fabs (1 - norm (g)) *
-	 d * adjoint (d)) * norm (1 / (1 - g));
-  return res;
-}
-
-/* The function is the counterpart of the above expandNoiseMatrix()
-   function.  It shrinks the noise correlation matrix by removing the
-   reference port.  The given S-parameter matrix is required to perform
-   this transformation and is obtained using the expandSParaMatrix()
-   function. */
-matrix spembed::shrinkNoiseMatrix (matrix n, matrix s) {
-  assert (s.getCols () == s.getRows () && n.getCols () == n.getRows () &&
-	  n.getCols () == s.getCols () && n.getCols () > 0);
-  int r, ports = n.getCols ();
-  nr_double_t g = -1;
-  nr_double_t T = getPropertyDouble ("Temp");
-
-  // create K' matrix
-  matrix k (ports - 1, ports);
-  for (r = 0; r < ports - 1; r++) k.set (r, r, 1);
-  for (r = 0; r < ports - 1; r++)
-    k.set (r, ports - 1, g * s.get (r, ports - 1) /
-	   (1.0 - g * s.get (ports - 1, ports - 1)));
-
-  // create D' vector
-  matrix d (ports - 1, 1);
-  for (r = 0; r < ports - 1; r++) d.set (r, 0, s.get (r, ports - 1));
-
-  // shrink noise correlation matrix
-  matrix res (ports - 1);
-  res = k * n * adjoint (k) + celsius2kelvin (T) / T0 * fabs (1.0 - norm (g)) /
-    norm (1.0 - g * s.get (ports - 1, ports - 1)) * d * adjoint (d);
-  return res;
-}
-
-/* This function computes the noise correlation matrix of a twoport
-   based upon the noise parameters and the given S-parameter
-   matrix. */
-matrix spembed::correlationMatrix (nr_double_t Fmin, nr_complex_t Sopt,
-				  nr_double_t Rn, matrix s) {
-  assert (s.getCols () == s.getRows () && s.getCols () == 2);
-  matrix c (2);
-  nr_complex_t Kx = 4 * Rn / z0 / norm (1.0 + Sopt);
-  c.set (0, 0, (Fmin - 1) * (norm (s.get (0, 0)) - 1) +
-	 Kx * norm (1.0 - s.get (0, 0) * Sopt));
-  c.set (1, 1, norm (s.get (1, 0)) * ((Fmin - 1) + Kx * norm (Sopt)));
-  c.set (0, 1, s.get (0, 0) / s.get (1, 0) * c.get (1, 1) -
-	 conj (s.get (1, 0)) * conj (Sopt) * Kx);
-  c.set (1, 0, conj (c.get (0, 1)));
-  return c;
-}
-
-/* The function computes the noise figure and noise parameters for the
-   given S-parameter and noise correlation matrices of a twoport. */
-nr_double_t spembed::noiseFigure (matrix s, matrix c, nr_double_t& Fmin,
-				 nr_complex_t& Sopt, nr_double_t& Rn) {
-  assert (s.getCols () == s.getRows () && c.getCols () == c.getRows () &&
-	  s.getCols () == 2 && c.getCols () == 2);
-  nr_complex_t n1, n2;
-  n1 = c.get (0, 0) * norm (s.get (1, 0)) -
-    2 * real (c.get (0, 1) * s.get (1, 0) * conj (s.get (0, 0))) +
-    c.get (1, 1) * norm (s.get (0, 0));
-  n2 = 2.0 * (c.get (1, 1) * s.get (0, 0) -
-	      c.get (0, 1) * s.get (1, 0)) / (c.get (1, 1) + n1);
-
-  // optimal source reflection coefficient
-  Sopt = 1 - norm (n2);
-  if (real (Sopt) < 0.0)
-    Sopt = (1.0 + std::sqrt (Sopt)) / n2;  // avoid a negative radicant
-  else
-    Sopt = (1.0 - std::sqrt (Sopt)) / n2;
-
-  // minimum noise figure
-  Fmin = real (1.0 + (c.get (1, 1) - n1 * norm (Sopt)) /
-	       norm (s.get (1, 0)) / (1.0 + norm (Sopt)));
-
-  // equivalent noise resistance
-  Rn = real ((c (0, 0) - 2.0 *
-	      real (c (0, 1) * conj ((1.0 + s (0, 0)) / s (1, 0))) +
-	      c (1, 1) * norm ((1.0 + s (0, 0)) / s (1, 0))) / 4.0);
-  Rn = Rn * z0;
-
-  // noise figure itself
-  return real (1.0 + c.get (1, 1) / norm (s.get (1, 0)));
+  return spfile::expandNoiseMatrix (n, s, T);
 }
 
 void spembed::calcNoiseAC (nr_double_t frequency) {
   // nothing to do if the given file type had errors
-  if (spara == NULL || nfreq == NULL) return;
+  if (spara == NULL || sfreq == NULL) return;
   setMatrixN (cstocy (calcMatrixCs (frequency), getMatrixY () * z0) / z0);
 }
 

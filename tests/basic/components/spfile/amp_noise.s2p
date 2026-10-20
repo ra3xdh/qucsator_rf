@@ -1,0 +1,9 @@
+! 2-port amplifier with noise parameters
+! Matched, gain=2 (6dB), reverse isolation
+! Noise: Fmin=3dB, Sopt=0.1∠30°, Rn/Z0=0.5
+# GHz S MA R 50
+1.0 0.0 0.0 2.0 0.0 0.0 0.0 0.0 0.0
+2.0 0.0 0.0 1.9 0.0 0.0 0.0 0.0 0.0
+! noise data: freq Fmin[dB] Sopt_mag Sopt_ang Rn/Z0
+1.0 3.010299956639812 0.0 0.0 0.5
+2.0 3.010299956639812 0.0 0.0 0.5

@@ -28,7 +28,7 @@
 #
 
 # ~~~
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(qucs-core CXX)
 
 include(CheckSymbolExists)
@@ -305,3 +305,12 @@ set(CPACK_GENERATOR "TGZ")
 set(CPACK_PACKAGE_VERSION_MAJOR 0)
 set(CPACK_PACKAGE_VERSION_MINOR 18)
 include(CPack)
+
+#
+# Testing
+#
+option(BUILD_TESTING "Build test suite" ON)
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()

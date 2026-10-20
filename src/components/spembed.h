@@ -42,10 +42,7 @@ class spembed : public spfile, public qucs::circuit
   void calcNoiseSP (nr_double_t);
   void calcNoiseAC (nr_double_t);
 
-  qucs::matrix correlationMatrix (nr_double_t, nr_complex_t, nr_double_t, qucs::matrix);
-  nr_double_t noiseFigure (qucs::matrix, qucs::matrix, nr_double_t&, nr_complex_t&, nr_double_t&);
   qucs::matrix expandNoiseMatrix (qucs::matrix, qucs::matrix);
-  qucs::matrix shrinkNoiseMatrix (qucs::matrix, qucs::matrix);
   qucs::matrix calcMatrixCs (nr_double_t);
 };
 

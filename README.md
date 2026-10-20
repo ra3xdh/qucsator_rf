@@ -48,22 +48,40 @@ Perform the following step to build the project:
 * Clone this git repository:
 ~~~
 git clone https://github.com/ra3xdh/qucsator_rf
-~~~
-* Go to the source directory and create the build directory
-~~~
 cd qucsator_rf
-mkdir build
 ~~~
-* Configure project with Cmake; define the desired installation path using `CMAKE_INSTALL_PREFIX`.
+* Configure with cmake; set installation prefix with `-DCMAKE_INSTALL_PREFIX=`.
 ~~~
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=/path_to_install/ ..
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/path_to_install/
 ~~~
-* Build and install the `qucsator_rf` and `qucsconv_rf`
+* Build and install
 ~~~
-make
-make install
+cmake --build build -j$(nproc)
+cmake --install build
 ~~~
+
+## Testing
+
+The test suite is built and run via CTest. It includes unit tests (Google Test) and
+integration tests (netlist simulation). Tests are enabled by default.
+
+~~~
+# Configure with tests enabled (default)
+cmake -S . -B build
+
+# Build (includes downloading Google Test on first run)
+cmake --build build -j$(nproc)
+
+# Run all tests
+cd build && ctest
+
+# Run subsets
+ctest -R qucs_unit          # unit tests only
+ctest -R netlist            # netlist tests only
+ctest --output-on-failure   # verbose output on failures
+~~~
+
+To disable tests: pass `-DBUILD_TESTING=OFF` to cmake.
 
 ## Windows
 

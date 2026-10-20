@@ -62,6 +62,11 @@ class spfile
   qucs::matrix expandSParaMatrix (qucs::matrix);
   qucs::matrix shrinkSParaMatrix (qucs::matrix);
   qucs::matrix getInterpolMatrixS (nr_double_t);
+  qucs::matrix expandNoiseMatrix (qucs::matrix, qucs::matrix, nr_double_t);
+  qucs::matrix correlationMatrix (nr_double_t, nr_complex_t, nr_double_t, qucs::matrix);
+  qucs::matrix computeNoiseCs (nr_double_t, qucs::matrix, nr_double_t);
+  
+  static bool isPassive (qucs::matrix s);
 
   int nPorts;
   qucs::dataset * data;
