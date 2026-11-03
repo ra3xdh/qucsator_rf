@@ -246,6 +246,35 @@ PropertyReal:
     $$->scale = $2;
     $$->unit = $3;
   }
+  | IMAG {
+    $$ = create_value ();
+    $$->value = 0.0;
+    $$->value_i = $1;
+  }
+  | IMAG ScaleOrUnit {
+    $$ = create_value ();
+    $$->value = 0.0;
+    $$->value_i = $1;
+    $$->scale = $2;
+  }
+  | COMPLEX {
+    $$ = create_value ();
+    $$->value = $1.r;
+    $$->value_i = $1.i;
+  }
+  | COMPLEX ScaleOrUnit {
+    $$ = create_value ();
+    $$->value = $1.r;
+    $$->value_i = $1.i;
+    $$->scale = $2;
+  }
+  | COMPLEX ScaleOrUnit ScaleOrUnit {
+    $$ = create_value ();
+    $$->value = $1.r;
+    $$->value_i = $1.i;
+    $$->scale = $2;
+    $$->unit = $3;
+  }
 ;
 
 PropertyValue:

@@ -282,7 +282,16 @@ void input::factory (void) {
 	    v->setConstant (c);
 	    o->addProperty (pairs->key, v);
 	  } else {
-	    o->addProperty (pairs->key, pairs->value->value);
+	    if (pairs->value->value_i != 0.0) {
+	      // add complex valued property
+	      variable * v = new variable (pairs->key);
+	      eqn::constant * c = new eqn::constant (eqn::TAG_COMPLEX);
+	      c->c = new nr_complex_t (pairs->value->value, pairs->value->value_i);
+	      v->setConstant (c);
+	      o->addProperty (pairs->key, v);
+	    } else {
+	      o->addProperty (pairs->key, pairs->value->value);
+	    }
 	  }
 	}
       }

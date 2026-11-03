@@ -25,9 +25,11 @@
 #ifndef __PROPERTY_H__
 #define __PROPERTY_H__
 
+#include <complex>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include "qucs_typedefs.h"
 
 namespace qucs {
 
@@ -50,6 +52,7 @@ class property
 
   qucs::vector * getVector (void) const;
   nr_double_t getDouble (void) const;
+  std::complex<nr_double_t> getComplex (void) const;
   int getInteger (void) const;
   const char * getString (void) const;
   const char * getReference (void) const;

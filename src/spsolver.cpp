@@ -47,6 +47,8 @@
 #include "characteristic.h"
 #include "spsolver.h"
 #include "constants.h"
+#include "variable.h"
+#include "equation.h"
 #include "components/component_id.h"
 #include "components/tee.h"
 #include "components/open.h"
@@ -937,7 +939,17 @@ void spsolver::insertDifferentialPorts (void) {
       result->getNode(0)->setPort (0);
 
       // pass the port impedance to the ideal trafo
-      result->addProperty ("Z", c->getPropertyDouble ("Z"));
+      nr_complex_t zport = c->getPropertyComplex ("Z");
+      if (imag (zport) != 0.0) {
+        variable * v = new variable ("Z");
+        eqn::constant * con = new eqn::constant (eqn::TAG_COMPLEX);
+        con->c = new nr_complex_t (zport);
+        v->setConstant (con);
+        result->addProperty ("Z", v);
+      }
+      else {
+        result->addProperty ("Z", real (zport));
+      }
 
       // put the trafo in the circuit list
       subnet->insertCircuit (result);
@@ -1012,7 +1024,7 @@ void spsolver::saveResults (nr_double_t freq) {
 	    if ((res_i == ni || res_i == no) && (res_j == ni || res_j == no)) {
 	      if (ni == res_i) {
 		// assign input port impedance
-		z0 = sig_i->getCircuit()->getPropertyDouble ("Z");
+		z0 = real (sig_i->getCircuit()->getPropertyComplex ("Z"));
 	      }
 	      ro = (res_i == ni) ? 0 : 1;
 	      co = (res_j == ni) ? 0 : 1;

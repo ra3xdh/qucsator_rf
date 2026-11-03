@@ -74,6 +74,7 @@ class object
   const char * getPropertyString (const std::string &n) const;
   const char * getPropertyReference (const std::string &n) const;
   nr_double_t getPropertyDouble (const std::string &n) const;
+  std::complex<nr_double_t> getPropertyComplex (const std::string &n) const;
   nr_double_t getScaledProperty (const std::string &n) const;
   int  getPropertyInteger (const std::string &n) const;
   bool hasProperty (const std::string &n) const ;

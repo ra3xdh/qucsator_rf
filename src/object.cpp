@@ -137,6 +137,18 @@ nr_double_t object::getPropertyDouble (const std::string &n) const {
     return 0.0;
 }
 
+/* Returns the requested property value which has been previously
+   added.  Complex valued properties return their complex value,
+   real valued properties are promoted to a complex value.  If there
+   is no such property the function returns zero. */
+nr_complex_t object::getPropertyComplex (const std::string &n) const {
+  const auto &it = props.find(n);
+  if(it != props.end())
+    return (*it).second.getComplex();
+  else
+    return nr_complex_t (0.0, 0.0);
+}
+
 /* The functions returns the requested (scalability) property value
    which has been previously added.  If there is no such scaled
    property the function returns the standard property or zero. */
