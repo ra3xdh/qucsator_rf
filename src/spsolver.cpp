@@ -47,6 +47,8 @@
 #include "characteristic.h"
 #include "spsolver.h"
 #include "constants.h"
+#include "variable.h"
+#include "equation.h"
 #include "components/component_id.h"
 #include "components/tee.h"
 #include "components/open.h"
@@ -937,7 +939,17 @@ void spsolver::insertDifferentialPorts (void) {
       result->getNode(0)->setPort (0);
 
       // pass the port impedance to the ideal trafo
-      result->addProperty ("Z", c->getPropertyDouble ("Z"));
+      nr_complex_t zport = c->getPropertyComplex ("Z");
+      if (imag (zport) != 0.0) {
+        variable * v = new variable ("Z");
+        eqn::constant * con = new eqn::constant (eqn::TAG_COMPLEX);
+        con->c = new nr_complex_t (zport);
+        v->setConstant (con);
+        result->addProperty ("Z", v);
+      }
+      else {
+        result->addProperty ("Z", real (zport));
+      }
 
       // put the trafo in the circuit list
       subnet->insertCircuit (result);
@@ -1001,8 +1013,25 @@ void spsolver::saveResults (nr_double_t freq) {
 	  res_j = sig_j->getCircuit()->getPropertyInteger ("Num");
 	  n = createSP (res_i, res_j);
 
+	  // complex port impedances: convert the S-parameter from the
+	  // internal pseudo-wave normalization to power-wave (Kurokawa)
+	  // normalization, where passive circuits stay inside the unit
+	  // circle; for real port impedances the conversion is the identity
+	  nr_complex_t z_i = sig_i->getCircuit()->getPropertyComplex ("Z");
+	  nr_complex_t z_j = sig_j->getCircuit()->getPropertyComplex ("Z");
+	  nr_complex_t sval = c->getS (i, j);
+	  if (imag (z_i) != 0.0 || imag (z_j) != 0.0) {
+	    nr_complex_t f_i =
+	      (real (z_i) != 0.0) ? std::sqrt (real (z_i) / z_i) : 1.0;
+	    nr_complex_t f_j =
+	      (real (z_j) != 0.0) ? std::sqrt (real (z_j) / z_j) : 1.0;
+	    sval = f_i * f_j * c->getS (i, j);
+	    if (i == j)
+	      sval += nr_complex_t (0.0, 1.0) * imag (z_i) / z_i;
+	  }
+
 	  // add variable data item to dataset
-	  saveVariable (n, c->getS (i, j), f);
+	  saveVariable (n, sval, f);
 
 	  // if noise analysis is requested
 	  if (noise) {
@@ -1012,7 +1041,7 @@ void spsolver::saveResults (nr_double_t freq) {
 	    if ((res_i == ni || res_i == no) && (res_j == ni || res_j == no)) {
 	      if (ni == res_i) {
 		// assign input port impedance
-		z0 = sig_i->getCircuit()->getPropertyDouble ("Z");
+		z0 = real (sig_i->getCircuit()->getPropertyComplex ("Z"));
 	      }
 	      ro = (res_i == ni) ? 0 : 1;
 	      co = (res_j == ni) ? 0 : 1;

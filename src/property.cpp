@@ -107,6 +107,23 @@ nr_double_t property::getDouble (void) const {
   return value;
 }
 
+// Returns the property's value as complex number.
+nr_complex_t property::getComplex (void) const {
+  if (var != NULL) {
+    eqn::constant * c = NULL;
+    if (var->getType () == VAR_CONSTANT)
+      c = (eqn::constant *) var->getConstant ();
+    else if (var->getType () == VAR_REFERENCE)
+      c = (eqn::constant *) var->getReference()->getResult ();
+    if (c != NULL) {
+      if (c->type == eqn::TAG_COMPLEX)
+        return *c->c;
+      return nr_complex_t (D (c), 0.0);
+    }
+  }
+  return nr_complex_t (value, 0.0);
+}
+
 // Returns the property's value as integer.
 int property::getInteger (void) const {
   if (var != NULL) return (int) std::floor (D (var->getConstant ()));

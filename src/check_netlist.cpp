@@ -488,6 +488,7 @@ static int checker_evaluate_scale (struct value_t * value)
         value->scale = NULL;
     }
     value->value = val * factor;
+    value->value_i = value->value_i * factor;
     return 1;
 }
 

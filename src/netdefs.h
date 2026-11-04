@@ -43,6 +43,7 @@ struct value_t {
   char * unit;
   char * scale;
   double value;
+  double value_i;
   int var;
   int subst;
   int hint;
